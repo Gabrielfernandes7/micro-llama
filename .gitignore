@@ -9,3 +9,7 @@ __pycache__/
 venv/
 env/
 .venv/
+
+# Pesos do Modelo (Artefatos de IA)
+*.pt
+*.pth
