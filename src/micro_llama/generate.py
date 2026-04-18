@@ -5,7 +5,11 @@ import os
 from micro_llama.model import MicroLlama
 from micro_llama.tokenizer import Tokenizer
 
-def generate(prompt, max_new_tokens=100):
+def generate(
+        prompt, 
+        max_new_tokens=100,
+        temperature=1.0
+    ):
     """Gera texto a partir de um prompt inicial usando o modelo treinado.
 
     Este processo utiliza a estratégia de amostragem (sampling) para prever 
@@ -25,11 +29,17 @@ def generate(prompt, max_new_tokens=100):
         na estrutura de pastas do projeto. Utiliza aceleração MPS (Metal) se 
         disponível no hardware Apple Silicon.
     """
+
     # 1. Localização dinâmica de arquivos
-    base_dir = os.path.dirname(__file__)
-    data_path = os.path.join(base_dir, "data", "data.txt")
+    project_root = os.path.dirname(
+        os.path.dirname(
+            os.path.dirname(__file__)
+        )
+    )
+
+    data_path = os.path.join(project_root, "data", "data.txt")
     # O model.pt foi salvo na raiz pelo train.py anterior
-    model_path = os.path.join(os.getcwd(), "model.pt")
+    model_path = os.path.join(project_root, "model.pt")
 
     # 2. Reconstrução do Vocabulário
     try:
@@ -66,7 +76,9 @@ def generate(prompt, max_new_tokens=100):
 
         # Seleção do último token (Next Token Prediction)
         next_token_logits = logits[0, -1]
-        probs = F.softmax(next_token_logits, dim=0)
+
+        scaled_logits = next_token_logits / temperature
+        probs = F.softmax(scaled_logits, dim=0)
 
         # Sampling multinomial para evitar repetições mecânicas
         next_token = torch.multinomial(probs, num_samples=1).item()
