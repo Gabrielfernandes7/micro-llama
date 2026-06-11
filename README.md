@@ -165,10 +165,8 @@ model.pt
 
 ### 3. Gerar texto
 
-```
-
+```python
 python3 -m generate.py
-
 ```
 
 ---
